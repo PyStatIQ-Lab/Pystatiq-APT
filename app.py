@@ -2,7 +2,6 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from scipy.optimize import minimize
 
 # Load stock list from Excel
 @st.cache_data
@@ -27,16 +26,9 @@ def fetch_stock_data(tickers, period="1y"):
     data = yf.download(tickers, period=period)['Close']
     return data
 
-# Get latest macroeconomic factors
-def get_latest_macro_factors():
-    macro_df = load_macro_data()
-    latest_row = macro_df.iloc[-1]
-    return latest_row["GDP"], latest_row["Inflation"], latest_row["Interest Rate"]
-
-# Arbitrage Pricing Theory (APT) Model
-def calculate_apt(tickers):
+# Arbitrage Pricing Theory (APT) Model with User Inputs
+def calculate_apt(tickers, gdp, inflation, interest_rate):
     risk_free_rate = 0.04  # 4% Risk-Free Rate
-    gdp, inflation, interest_rate = get_latest_macro_factors()
 
     results = []
     for ticker in tickers:
@@ -60,7 +52,7 @@ def calculate_apt(tickers):
     return pd.DataFrame(results)
 
 # Streamlit UI
-st.title("📈 APT Model with Macroeconomic Data")
+st.title("📈 APT Model with User-Defined Macroeconomic Inputs")
 
 # Load stock data
 file_path = "stocklist.xlsx"
@@ -71,15 +63,14 @@ sheet_selected = st.selectbox("Select Stock List Sheet:", sheet_names)
 stock_df = stock_data_dict[sheet_selected]  
 tickers = stock_df["Symbol"].dropna().tolist()
 
-# Show latest macroeconomic values
-st.subheader("📊 Latest Macroeconomic Indicators")
-gdp, inflation, interest_rate = get_latest_macro_factors()
-st.write(f"**GDP Growth:** {gdp}%")
-st.write(f"**Inflation Rate:** {inflation}%")
-st.write(f"**Interest Rate:** {interest_rate}%")
+# User inputs macroeconomic assumptions
+st.subheader("📊 Adjust Macroeconomic Inputs")
+gdp_input = st.number_input("Expected GDP Growth (%)", min_value=0.0, max_value=10.0, value=6.0, step=0.1)
+inflation_input = st.number_input("Expected Inflation Rate (%)", min_value=0.0, max_value=10.0, value=5.0, step=0.1)
+interest_input = st.number_input("Expected Interest Rate (%)", min_value=0.0, max_value=10.0, value=6.5, step=0.1)
 
 # Run APT model
 if st.button("Run APT Model"):
-    apt_df = calculate_apt(tickers)
+    apt_df = calculate_apt(tickers, gdp_input, inflation_input, interest_input)
     st.subheader("📊 APT Expected Returns")
     st.dataframe(apt_df)
