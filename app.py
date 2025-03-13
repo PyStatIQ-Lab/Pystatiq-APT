@@ -13,7 +13,7 @@ def load_stocklist(file_path):
 
 # Fetch stock data
 def fetch_stock_data(tickers, period="1y"):
-    data = yf.download(tickers, period=period)['Adj Close']
+    data = yf.download(tickers, period=period)['Close']
     return data
 
 # Fetch factor data (e.g., inflation, GDP, interest rates)
@@ -91,7 +91,7 @@ def optimize_portfolio(data, risk_tolerance):
 st.title("📈 Quantitative Stock Selection Model")
 
 # Load stock data
-file_path = "/mnt/data/stocklist.xlsx"
+file_path = "stocklist.xlsx"
 stock_data_dict, sheet_names = load_stocklist(file_path)
 
 # User selects the sheet
